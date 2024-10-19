@@ -61,25 +61,42 @@
             console.warn(`Scan error: ${errorMessage}`);
         }
 
+        // Request camera permission
+        async function requestCameraPermission() {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+                // If permission is granted, stop the stream immediately
+                stream.getTracks().forEach(track => track.stop());
+                return true;
+            } catch (err) {
+                console.error("Camera permission denied: ", err);
+                alert("Camera access is required to scan barcodes. Please allow camera permissions in your browser settings.");
+                return false;
+            }
+        }
+
         // Start scanning when the button is clicked
-        document.getElementById('startButton').addEventListener('click', () => {
-            // Start scanning with environment facing camera
-            html5QrCode.start(
-                { facingMode: "environment" }, // Use the back camera
-                {
-                    fps: 10, // Frames per second
-                    qrbox: { width: 250, height: 250 } // Size of the scanning box
-                },
-                onScanSuccess,
-                onScanError)
-            .then(() => {
-                document.getElementById('startButton').style.display = 'none';
-                document.getElementById('stopButton').style.display = 'block';
-            })
-            .catch(err => {
-                console.error(`Unable to start scanning: ${err}`);
-                alert("Failed to start scanning: " + err.message);
-            });
+        document.getElementById('startButton').addEventListener('click', async () => {
+            const hasPermission = await requestCameraPermission();
+            if (hasPermission) {
+                // Start scanning with environment facing camera
+                html5QrCode.start(
+                    { facingMode: "environment" }, // Use the back camera
+                    {
+                        fps: 10, // Frames per second
+                        qrbox: { width: 250, height: 250 } // Size of the scanning box
+                    },
+                    onScanSuccess,
+                    onScanError)
+                .then(() => {
+                    document.getElementById('startButton').style.display = 'none';
+                    document.getElementById('stopButton').style.display = 'block';
+                })
+                .catch(err => {
+                    console.error(`Unable to start scanning: ${err}`);
+                    alert("Failed to start scanning: " + err.message);
+                });
+            }
         });
 
         // Function to stop scanning
