@@ -14,12 +14,15 @@
             justify-content: center;
             height: 100vh;
             margin: 0;
+            background-color: #f0f0f0;
         }
         #reader {
-            width: 300px;
+            width: 100%;
+            max-width: 400px;
             height: 300px;
             margin-bottom: 20px;
             border: 2px solid #ccc;
+            background-color: #ffffff;
         }
         #result {
             font-size: 18px;
@@ -30,6 +33,7 @@
             padding: 10px 20px;
             margin-top: 10px;
             cursor: pointer;
+            font-size: 16px;
         }
     </style>
 </head>
@@ -41,28 +45,29 @@
     <button id="stopButton" style="display:none;">Stop Scanning</button>
     
     <script>
+        // Create instance of Html5Qrcode
+        const html5QrCode = new Html5Qrcode("reader");
+
+        // Success callback function
         function onScanSuccess(decodedText, decodedResult) {
-            // Handle the result
+            // Show the result and stop scanning
             document.getElementById('result').innerText = `Barcode detected: ${decodedText}`;
             console.log(`Decoded text: ${decodedText}`, decodedResult);
-            // Stop scanning after a successful scan
-            html5QrCode.stop();
-            document.getElementById('startButton').style.display = 'block';
-            document.getElementById('stopButton').style.display = 'none';
+            stopScanning();
         }
 
+        // Error callback function
         function onScanError(errorMessage) {
-            // Handle scan error
             console.warn(`Scan error: ${errorMessage}`);
         }
 
-        const html5QrCode = new Html5Qrcode("reader");
-
+        // Start scanning when the button is clicked
         document.getElementById('startButton').addEventListener('click', () => {
+            // Start scanning with environment facing camera
             html5QrCode.start(
                 { facingMode: "environment" }, // Use the back camera
                 {
-                    fps: 10, // Frame per second for scanning
+                    fps: 10, // Frames per second
                     qrbox: { width: 250, height: 250 } // Size of the scanning box
                 },
                 onScanSuccess,
@@ -77,7 +82,8 @@
             });
         });
 
-        document.getElementById('stopButton').addEventListener('click', () => {
+        // Function to stop scanning
+        function stopScanning() {
             html5QrCode.stop()
             .then(() => {
                 console.log("Stopped scanning.");
@@ -88,7 +94,10 @@
             .catch(err => {
                 console.error(`Failed to stop scanning: ${err}`);
             });
-        });
+        }
+
+        // Stop scanning when the button is clicked
+        document.getElementById('stopButton').addEventListener('click', stopScanning);
     </script>
 </body>
 </html>
