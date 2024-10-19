@@ -4,49 +4,46 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Barcode Scanner</title>
+    <script src="https://unpkg.com/html5-qrcode/minified/html5-qrcode.min.js"></script>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 20px;
-            text-align: center;
-        }
-        video {
-            width: 100%;
-            max-width: 400px;
-            border: 2px solid #000;
-        }
-        #result {
-            margin-top: 20px;
-            font-weight: bold;
+        #reader {
+            width: 300px;
+            height: 300px;
+            margin: auto;
+            border: 1px solid #ccc;
         }
     </style>
 </head>
 <body>
-    <h1>Barcode Scanner</h1>
-    <video id="video" autoplay></video>
+    <h1>Israeli Product Barcode Scanner</h1>
+    <div id="reader"></div>
     <div id="result"></div>
-
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/zxing/0.0.2/zxing.min.js"></script>
+    
     <script>
-        const codeReader = new ZXing.BrowserMultiFormatReader();
-        const videoElement = document.getElementById('video');
-        const resultDiv = document.getElementById('result');
+        function onScanSuccess(decodedText, decodedResult) {
+            // Handle the result
+            document.getElementById('result').innerText = `Barcode detected: ${decodedText}`;
+            console.log(`Decoded text: ${decodedText}`, decodedResult);
+        }
 
-        // Start video streaming
-        codeReader.decodeFromVideoDevice(null, videoElement, (result, err) => {
-            if (result) {
-                const barcode = result.text;
-                const countryCode = barcode.slice(0, 3); // Get the first 3 digits
-                // Check if the product is Israeli
-                if (countryCode === '729') {
-                    resultDiv.innerText = 'This product is from Israel.';
-                } else {
-                    resultDiv.innerText = 'This product is NOT from Israel.';
-                }
-            }
-            if (err && !(err instanceof ZXing.NotFoundException)) {
-                console.error(err);
-            }
+        function onScanError(errorMessage) {
+            // Handle scan error
+            console.warn(`Scan error: ${errorMessage}`);
+        }
+
+        const html5QrCode = new Html5Qrcode("reader");
+
+        // Start scanning
+        html5QrCode.start(
+            { facingMode: "environment" }, // Use the back camera
+            {
+                fps: 10, // Frame per second for scanning
+                qrbox: { width: 250, height: 250 } // Size of the scanning box
+            },
+            onScanSuccess,
+            onScanError)
+        .catch(err => {
+            console.error(`Unable to start scanning: ${err}`);
         });
     </script>
 </body>
